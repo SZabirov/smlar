@@ -36,12 +36,13 @@ SmlarLogAssign(bool newval, void *extra)
 	resetStatCache();
 }
 
-static int smlar_smltype = ST_COSINE;
+static int smlar_smltype = ST_TANIMOTO;
 
 static const struct config_enum_entry SmlarTypeOptions[] = {
 	{"cosine", ST_COSINE, false},
 	{"tfidf", ST_TFIDF, false},
 	{"overlap", ST_OVERLAP, false},
+	{"tanimoto", ST_TANIMOTO, false},
 	{NULL, 0, false}
 };
 

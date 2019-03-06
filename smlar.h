@@ -130,6 +130,8 @@ StatCache *getStat(void *cache, size_t n);
 #define ST_COSINE	1
 #define ST_TFIDF	2
 #define ST_OVERLAP	3
+#define ST_TANIMOTO	4
+
 /*
  * TF methods
  */

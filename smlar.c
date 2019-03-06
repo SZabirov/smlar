@@ -678,6 +678,15 @@ arraysml(PG_FUNCTION_ARGS)
 				PG_RETURN_FLOAT4(  ((double)cnt) / sqrt( power ) );
 			}
 			break;
+		case ST_TANIMOTO:
+		{
+			int				cnt;
+
+			cnt = numOfIntersect(sa, sb);
+
+			PG_RETURN_FLOAT4(  ((double)cnt) / (sa->nelems + sb->nelems - cnt) );
+		}
+			break;
 		case ST_OVERLAP:
 			{
 				float4 res = (float4)numOfIntersect(sa, sb);
@@ -814,6 +823,14 @@ arraysml_op(PG_FUNCTION_ARGS)
 				cnt = numOfIntersect(sa, sb);
 				power = ((double)cnt) / power;
 			}
+			break;
+		case ST_TANIMOTO:
+		{
+			int				cnt;
+
+			cnt = numOfIntersect(sa, sb);
+			power = ((double)cnt) / (sa->nelems + sb->nelems - cnt);
+		}
 			break;
 		case ST_OVERLAP:
 			power = (double)numOfIntersect(sa, sb);

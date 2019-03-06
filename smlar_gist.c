@@ -1049,12 +1049,12 @@ gsmlsign_consistent(PG_FUNCTION_ARGS)
 						{
 							sumK += h->idfMin * h->idfMin;
 							sumU += h->idfMax * maxKTF * s->df[i];
-						} 
+						}
 					}
 
 					if ( sumK > 0.0 && sumQ > 0.0 && sumU / sqrt( sumK * sumQ ) >= GetSmlarLimit() )
 					{
-						/* 
+						/*
 						 * More precisely calculate sumK
 						 */
 						h = NULL;
@@ -1062,7 +1062,7 @@ gsmlsign_consistent(PG_FUNCTION_ARGS)
 
 						for(i=0;i<key->size;i++)
 						{
-							h = getHashedElemIdf(stat, GETARR(key)[i], h);					
+							h = getHashedElemIdf(stat, GETARR(key)[i], h);
 							if (h)
 								sumK += h->idfMin * h->idfMin;
 						}
@@ -1099,6 +1099,27 @@ gsmlsign_consistent(PG_FUNCTION_ARGS)
 							res = true;
 					}
 				}
+				break;
+			case ST_TANIMOTO:
+			{
+				int cnt = 0;
+                while( kptr - GETARR(key) < key->size && qptr - GETARR(query) < query->size )
+                {
+                    if ( *kptr < *qptr )
+                        kptr++;
+                    else if ( *kptr > *qptr )
+                        qptr++;
+                    else
+                    {
+                        cnt++;
+                        kptr++;
+                        qptr++;
+                    }
+                }
+
+				if ( (((double)cnt) / (key->size + query->size - cnt)) >= GetSmlarLimit() )
+					res = true;
+			}
 				break;
 			default:
 				elog(ERROR,"GiST doesn't support current formula type of similarity");
@@ -1168,6 +1189,17 @@ gsmlsign_consistent(PG_FUNCTION_ARGS)
 							res = true;
 					}
 					break;
+				case ST_TANIMOTO:
+				{
+					double	power;
+
+					for(i=0; i<s->nelems; i++)
+						count += GETBIT(sign, HASHVAL(s->hash[i]));
+
+					if ( (((double)count) / (key->size + s->nelems - count)) >= GetSmlarLimit() )
+						res = true;
+				}
+					break;
 				default:
 					elog(ERROR,"GiST doesn't support current formula type of similarity");
 			}
@@ -1213,6 +1245,15 @@ gsmlsign_consistent(PG_FUNCTION_ARGS)
 						if ( s->nelems == count  || sqrt(((double)count) / ((double)(s->nelems))) >= GetSmlarLimit() )
 							res = true;
 					}
+					break;
+				case ST_TANIMOTO:
+				{
+					for(i=0; i<s->nelems; i++)
+						count += GETBIT(sign, HASHVAL(s->hash[i]));
+
+					if ( s->nelems == count  || ((double)count) / ((double)(s->nelems)) >= GetSmlarLimit() )
+						res = true;
+				}
 					break;
 				default:
 					elog(ERROR,"GiST doesn't support current formula type of similarity");
